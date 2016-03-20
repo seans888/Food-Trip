@@ -1,0 +1,57 @@
+BEGIN TRANSACTION;
+CREATE TABLE "User" (
+	`ID`	INTEGER NOT NULL,
+	`user_type`	TEXT NOT NULL UNIQUE,
+	`f_name`	TEXT NOT NULL,
+	`m_name`	TEXT NOT NULL,
+	`l_name`	BLOB NOT NULL,
+	`position`	NUMERIC NOT NULL,
+	`email`	TEXT NOT NULL,
+	`contact_num`	INTEGER NOT NULL,
+	`book_ID`	INTEGER NOT NULL,
+	PRIMARY KEY(ID),
+	FOREIGN KEY(`book_ID`) REFERENCES Book ( ID )
+);
+CREATE TABLE "Restaurant" (
+	`ID`	INTEGER NOT NULL,
+	`name`	TEXT NOT NULL,
+	`company_name`	TEXT NOT NULL,
+	`desc`	TEXT NOT NULL,
+	`type`	TEXT NOT NULL UNIQUE,
+	`menu_desc`	TEXT NOT NULL,
+	`price`	NUMERIC NOT NULL,
+	`op_time`	TEXT NOT NULL,
+	`cl_time`	TEXT NOT NULL,
+	`book_ID`	INTEGER NOT NULL,
+	`promo_ID`	INTEGER NOT NULL,
+	`location_ID`	INTEGER NOT NULL,
+	PRIMARY KEY(ID),
+	FOREIGN KEY(`book_ID`) REFERENCES Book ( ID ),
+	FOREIGN KEY(`promo_ID`) REFERENCES Promo ( ID ),
+	FOREIGN KEY(`location_ID`) REFERENCES Location (ID)
+);
+CREATE TABLE "Promo" (
+	`ID`	INTEGER NOT NULL,
+	`name`	TEXT NOT NULL,
+	`desc`	TEXT NOT NULL,
+	`discount`	NUMERIC NOT NULL,
+	`discounted_price`	NUMERIC NOT NULL,
+	PRIMARY KEY(ID)
+);
+CREATE TABLE "Location" (
+	`ID`	INTEGER NOT NULL,
+	`street_num`	INTEGER NOT NULL,
+	`street_name`	TEXT NOT NULL,
+	`city`	TEXT NOT NULL,
+	`state`	TEXT NOT NULL,
+	`latitude`	INTEGER NOT NULL,
+	`longitude`	INTEGER NOT NULL,
+	PRIMARY KEY(ID)
+);
+CREATE TABLE "Book" (
+	`ID`	INTEGER NOT NULL,
+	`date`	TEXT NOT NULL,
+	`time`	TEXT NOT NULL,
+	PRIMARY KEY(ID)
+);
+COMMIT;
