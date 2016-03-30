@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `Foodtrip`.`Promo` (
   `promo_desc` VARCHAR(200) NOT NULL,
   `discount` DECIMAL(5,2) NOT NULL,
   `discounted_price` DECIMAL(10,2) NOT NULL,
+  `duration` DATETIME NOT NULL,
   PRIMARY KEY (`promoID`))
 ENGINE = InnoDB;
 
@@ -72,6 +73,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Foodtrip`.`User` (
   `userID` INT NOT NULL,
+  `user_type` VARCHAR(45) NOT NULL,
   `f_name` VARCHAR(45) NOT NULL,
   `m_name` VARCHAR(45) NOT NULL,
   `l_name` VARCHAR(45) NOT NULL,
@@ -101,6 +103,34 @@ CREATE TABLE IF NOT EXISTS `Foodtrip`.`Book` (
   CONSTRAINT `fk_User_has_Restaurant_Restaurant1`
     FOREIGN KEY (`Restaurant_restoID`)
     REFERENCES `Foodtrip`.`Restaurant` (`restoID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Foodtrip`.`Feedback`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Foodtrip`.`Feedback` (
+  `restoID` INT NOT NULL,
+  `promoID` INT NOT NULL,
+  `userID` INT NOT NULL,
+  `feedbackID` VARCHAR(45) NOT NULL,
+  `comments` VARCHAR(200) NOT NULL,
+  `rating` VARCHAR(45) NOT NULL,
+  `date` DATE NOT NULL,
+  `time` TIME NOT NULL,
+  PRIMARY KEY (`restoID`, `promoID`, `userID`),
+  INDEX `fk_Restaurant_has_User_User1_idx` (`userID` ASC),
+  INDEX `fk_Restaurant_has_User_Restaurant1_idx` (`restoID` ASC, `promoID` ASC),
+  CONSTRAINT `fk_Restaurant_has_User_Restaurant1`
+    FOREIGN KEY (`restoID` , `promoID`)
+    REFERENCES `Foodtrip`.`Restaurant` (`restoID` , `promoID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Restaurant_has_User_User1`
+    FOREIGN KEY (`userID`)
+    REFERENCES `Foodtrip`.`User` (`userID`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
