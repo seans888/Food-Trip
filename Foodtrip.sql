@@ -1,57 +1,141 @@
-BEGIN TRANSACTION;
-CREATE TABLE "User" (
-	`ID`	INTEGER NOT NULL,
-	`user_type`	TEXT NOT NULL UNIQUE,
-	`f_name`	TEXT NOT NULL,
-	`m_name`	TEXT NOT NULL,
-	`l_name`	BLOB NOT NULL,
-	`position`	NUMERIC NOT NULL,
-	`email`	TEXT NOT NULL,
-	`contact_num`	INTEGER NOT NULL,
-	`book_ID`	INTEGER NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(`book_ID`) REFERENCES Book ( ID )
-);
-CREATE TABLE "Restaurant" (
-	`ID`	INTEGER NOT NULL,
-	`name`	TEXT NOT NULL,
-	`company_name`	TEXT NOT NULL,
-	`desc`	TEXT NOT NULL,
-	`type`	TEXT NOT NULL UNIQUE,
-	`menu_desc`	TEXT NOT NULL,
-	`price`	NUMERIC NOT NULL,
-	`op_time`	TEXT NOT NULL,
-	`cl_time`	TEXT NOT NULL,
-	`book_ID`	INTEGER NOT NULL,
-	`promo_ID`	INTEGER NOT NULL,
-	`location_ID`	INTEGER NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(`book_ID`) REFERENCES Book ( ID ),
-	FOREIGN KEY(`promo_ID`) REFERENCES Promo ( ID ),
-	FOREIGN KEY(`location_ID`) REFERENCES Location (ID)
-);
-CREATE TABLE "Promo" (
-	`ID`	INTEGER NOT NULL,
-	`name`	TEXT NOT NULL,
-	`desc`	TEXT NOT NULL,
-	`discount`	NUMERIC NOT NULL,
-	`discounted_price`	NUMERIC NOT NULL,
-	PRIMARY KEY(ID)
-);
-CREATE TABLE "Location" (
-	`ID`	INTEGER NOT NULL,
-	`street_num`	INTEGER NOT NULL,
-	`street_name`	TEXT NOT NULL,
-	`city`	TEXT NOT NULL,
-	`state`	TEXT NOT NULL,
-	`latitude`	INTEGER NOT NULL,
-	`longitude`	INTEGER NOT NULL,
-	PRIMARY KEY(ID)
-);
-CREATE TABLE "Book" (
-	`ID`	INTEGER NOT NULL,
-	`date`	TEXT NOT NULL,
-	`time`	TEXT NOT NULL,
-	PRIMARY KEY(ID)
-);
-COMMIT;
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+-- -----------------------------------------------------
+-- Schema Foodtrip
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `Foodtrip` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
+USE `Foodtrip` ;
+
+-- -----------------------------------------------------
+-- Table `Foodtrip`.`Promo`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Foodtrip`.`Promo` (
+  `promoID` INT NOT NULL,
+  `promo_name` VARCHAR(45) NOT NULL,
+  `promo_desc` VARCHAR(200) NOT NULL,
+  `discount` DECIMAL(5,2) NOT NULL,
+  `discounted_price` DECIMAL(10,2) NOT NULL,
+  `duration` DATETIME NOT NULL,
+  PRIMARY KEY (`promoID`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Foodtrip`.`Location`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Foodtrip`.`Location` (
+  `locationID` INT NOT NULL,
+  `street_num` INT NOT NULL,
+  `street_name` VARCHAR(45) NOT NULL,
+  `city` VARCHAR(45) NOT NULL,
+  `state` VARCHAR(45) NOT NULL,
+  `latitude` INT NOT NULL,
+  `longitude` INT NOT NULL,
+  PRIMARY KEY (`locationID`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Foodtrip`.`Restaurant`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Foodtrip`.`Restaurant` (
+  `restoID` INT NOT NULL,
+  `resto_name` VARCHAR(45) NOT NULL,
+  `company_name` VARCHAR(45) NOT NULL,
+  `resto_desc` VARCHAR(200) NOT NULL,
+  `resto_type` VARCHAR(45) NOT NULL,
+  `menu_desc` VARCHAR(500) NOT NULL,
+  `price` DECIMAL(10,2) NOT NULL,
+  `op_time` TIME NOT NULL,
+  `cl_time` TIME NOT NULL,
+  `promoID` INT NOT NULL,
+  `locationID` INT NOT NULL,
+  PRIMARY KEY (`restoID`, `promoID`),
+  INDEX `fk_Restaurant_Promo1_idx` (`promoID` ASC),
+  INDEX `fk_Restaurant_Location1_idx` (`locationID` ASC),
+  CONSTRAINT `fk_Restaurant_Promo1`
+    FOREIGN KEY (`promoID`)
+    REFERENCES `Foodtrip`.`Promo` (`promoID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Restaurant_Location1`
+    FOREIGN KEY (`locationID`)
+    REFERENCES `Foodtrip`.`Location` (`locationID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Foodtrip`.`User`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Foodtrip`.`User` (
+  `userID` INT NOT NULL,
+  `user_type` VARCHAR(45) NOT NULL,
+  `f_name` VARCHAR(45) NOT NULL,
+  `m_name` VARCHAR(45) NOT NULL,
+  `l_name` VARCHAR(45) NOT NULL,
+  `position` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
+  `contact_num` INT NOT NULL,
+  PRIMARY KEY (`userID`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Foodtrip`.`Book`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Foodtrip`.`Book` (
+  `User_userID` INT NOT NULL,
+  `Restaurant_restoID` INT NOT NULL,
+  `date` DATE NOT NULL,
+  `time` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`User_userID`, `Restaurant_restoID`),
+  INDEX `fk_User_has_Restaurant_Restaurant1_idx` (`Restaurant_restoID` ASC),
+  INDEX `fk_User_has_Restaurant_User_idx` (`User_userID` ASC),
+  CONSTRAINT `fk_User_has_Restaurant_User`
+    FOREIGN KEY (`User_userID`)
+    REFERENCES `Foodtrip`.`User` (`userID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_User_has_Restaurant_Restaurant1`
+    FOREIGN KEY (`Restaurant_restoID`)
+    REFERENCES `Foodtrip`.`Restaurant` (`restoID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Foodtrip`.`Feedback`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Foodtrip`.`Feedback` (
+  `restoID` INT NOT NULL,
+  `promoID` INT NOT NULL,
+  `userID` INT NOT NULL,
+  `feedbackID` VARCHAR(45) NOT NULL,
+  `comments` VARCHAR(200) NOT NULL,
+  `rating` VARCHAR(45) NOT NULL,
+  `date` DATE NOT NULL,
+  `time` TIME NOT NULL,
+  PRIMARY KEY (`restoID`, `promoID`, `userID`),
+  INDEX `fk_Restaurant_has_User_User1_idx` (`userID` ASC),
+  INDEX `fk_Restaurant_has_User_Restaurant1_idx` (`restoID` ASC, `promoID` ASC),
+  CONSTRAINT `fk_Restaurant_has_User_Restaurant1`
+    FOREIGN KEY (`restoID` , `promoID`)
+    REFERENCES `Foodtrip`.`Restaurant` (`restoID` , `promoID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Restaurant_has_User_User1`
+    FOREIGN KEY (`userID`)
+    REFERENCES `Foodtrip`.`User` (`userID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
